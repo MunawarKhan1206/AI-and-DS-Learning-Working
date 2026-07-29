@@ -1,1 +1,1 @@
-# This Repo Contains Assignment Of SMIT Artificial Intelligence and Data Science  
+# This Repo Contains Assignment Of  Artificial Intelligence and Data Science  
