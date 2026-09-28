@@ -1,196 +1,172 @@
-# 📋 Project Report: Smart Home CCTV Surveillance & Threat Detection Using YOLO11
+# 📋 Project Report: Smart Home CCTV Surveillance & Garbage Dumping Detection Using YOLO11
 
-**Course / Module:** Artificial Intelligence & Data Science (Computer Vision)  
+**Course / Module:** Saylani Welfare (SMIT) AI & Data Science (Computer Vision)  
 **Assignment:** End-to-End Object Detection Project using YOLO  
 **Submission Deadline:** 28th September 2026  
-**Author / Student Name:** [Your Name Here]  
-**Roll / Student ID:** [Your Roll Number / ID]  
-**Dataset Link:** [Insert your Roboflow Dataset Link Here]  
-**GitHub / Code Repository:** [Insert your Repository Link Here]  
+**Author / Student Name:** Munawar Khan  
+**Corpus / GitHub:** MunawarKhan1206/AI-and-DS-Learning-Working  
+**Roboflow Dataset Link:** [https://app.roboflow.com/munawar-khan/custom-cctv-object-detection/1](https://app.roboflow.com/munawar-khan/custom-cctv-object-detection/1)  
 
 ---
 
 ## 1. Executive Summary & Abstract
-Conventional closed-circuit television (CCTV) systems in residential environments are predominantly passive: they record hundreds of hours of video footage to an NVR or DVR hard drive, requiring manual human review only after an incident or theft has already occurred. 
+Conventional closed-circuit television (CCTV) systems installed outside homes and residential buildings operate passively: they continuously record video footage to a local NVR or hard drive without real-time intelligence. Homeowners only review the recorded video retroactively after an undesirable incident—such as illegal garbage dumping, littering, or suspicious loitering—has already taken place.
 
-In this project, an end-to-end intelligent surveillance system was designed and implemented using an outdoor **Dahua IP Security Camera** and the cutting-edge **Ultralytics YOLO11** deep learning architecture. Over 100 high-resolution frames were captured directly from the Dahua CCTV stream across diverse real-world lighting conditions (daylight, dusk, artificial porch lighting). The dataset was annotated and augmented on **Roboflow** for three critical residential surveillance classes:
-1. `person` — Detects individuals approaching the gate, porch, or boundary (alerting against unauthorized intrusion).
-2. `vehicle` — Identifies cars, motorbikes, and rickshaws parked or moving in front of the residence.
-3. `package` — Detects delivered parcels or boxes left unattended at the entrance.
+In this project, an end-to-end intelligent surveillance and event detection pipeline was designed and deployed using footage collected directly from an outdoor **Home CCTV IP Camera**. Over 150 real-world frames were captured across various times of day. The dataset was labeled and augmented using **Roboflow** for four specific custom surveillance classes:
+1. **`Person`**: Pedestrians, neighbors, and residents passing by or standing near the property boundary.
+2. **`Garbage_Person`**: Individuals actively carrying, dumping, or handling trash/garbage bags.
+3. **`Garbage Stopped`**: Dumped trash bags, garbage sacks, or litter deposited and stationary on the road or sidewalk.
+4. **`Custom-CCTV-Object-Detection`**: High-level Region of Interest (ROI) surveillance zone.
 
-The model was fine-tuned using transfer learning with pre-trained YOLO11 weights. The resulting model achieves real-time inference speed (>30 FPS) with high mean Average Precision (mAP), demonstrating feasibility for live Dahua RTSP stream analysis and proactive security alerting.
+Using transfer learning from **Ultralytics YOLO11 (`yolo11n.pt`)**, a custom detector was trained. The model achieves rapid real-time inference (>30 FPS) with high detection accuracy, enabling automated notifications whenever unauthorized garbage dumping occurs outside the home.
 
 ---
 
-## 2. Problem Statement & Motivation
+## 2. Idea & Problem Statement
 ### 2.1 The Problem
-- **Passive vs. Active Security:** Traditional CCTV cameras do not notify homeowners in real-time when a specific event occurs; standard motion detection triggers excessive false alarms caused by moving tree leaves, shadows, insects, or rain.
-- **Package Theft ("Porch Piracy"):** With the rapid rise of e-commerce deliveries, unattended parcels left outside front doors are prime targets for opportunistic theft.
-- **Need for Custom CCTV Data:** Off-the-shelf models trained on generic COCO datasets fail to adapt well to high-angle, fixed-perspective CCTV lenses, optical fish-eye distortion, and regional vehicle types (e.g., motorbikes, rickshaws).
+- **Neighborhood Littering & Illegal Dumping:** Unauthorized dumping of waste on neighborhood streets and outside residential gates causes hygiene issues, odor, and municipal fines. Homeowners lack a proactive way to stop or detect culprits in the act.
+- **Passive CCTV Limitation:** Existing security cameras record hundreds of hours of video, but motion detection features trigger false alarms for swaying trees, shadows, or passing animals, rendering standard alerts ineffective.
+- **Domain-Specific Need:** Pre-trained models (trained on general datasets like COCO) lack classes like "dumped garbage" or "person carrying garbage bags" viewed from an elevated high-angle CCTV perspective.
 
 ### 2.2 Project Objectives
-1. Collect a genuine, unique dataset directly from an outdoor Dahua IP CCTV camera.
-2. Annotate over 100+ frames using Roboflow with high bounding-box fidelity.
-3. Train and evaluate the latest **YOLO11** object detection model.
-4. Establish a real-time RTSP ingestion pipeline capable of triggering smart security alerts.
+1. **Data Collection:** Collect real CCTV video footage from an outdoor home security camera.
+2. **Annotation & Augmentation:** Extract keyframes and annotate them into custom classes using Roboflow.
+3. **Model Fine-Tuning:** Train a lightweight YOLO11 object detection model.
+4. **Performance Evaluation:** Measure model performance using Precision, Recall, Confusion Matrix, and mAP@50 curves.
+5. **Real-Time Alert Logic:** Develop deployment logic for live camera streams (RTSP) with visual security warnings.
 
 ---
 
 ## 3. Data Collection & Preprocessing
-### 3.1 Hardware Setup
-- **Camera Model:** Dahua Outdoor IP Security Camera (HD Resolution, Wide-Angle Fixed Lens, Night-Vision Infrared capable).
-- **Mounting Position:** Elevated entrance/gate view covering the perimeter gate, walkway, front porch, and roadside.
-- **Capture Protocol:** RTSP (Real-Time Streaming Protocol) stream captured at 1080p resolution.
+### 3.1 Camera Setup
+- **Device:** Outdoor Home Security Camera (HD Resolution, Wide-Angle Fixed Perspective Lens, Infrared Day/Night capability).
+- **Mounting Position:** Elevated entrance gate viewpoint covering the front walkway, street boundary, and doorstep.
+- **Resolution:** 1080p stream recorded across daylight, overcast, and low-light transitions.
 
-### 3.2 Frame Extraction Strategy
-Video clips were recorded across various days and times to capture diverse visual conditions:
-- **Morning / Bright Daylight:** High contrast and sharp shadows.
-- **Overcast / Cloudy:** Diffused lighting.
-- **Late Afternoon / Dusk:** Low-light transition.
-- **Night with Porch / Street Lighting:** Artificial yellow/white illumination.
+### 3.2 Dataset Statistics
+- **Total Dataset Size:** 156 images
+  - **Training Set:** 140 images (89.7%)
+  - **Validation Set:** 10 images (6.4%)
+  - **Test Set:** 6 images (3.8%)
+- **Total Annotated Instances:** 263 labeled bounding boxes
+  - `Person`: 195 instances
+  - `Garbage_Person`: 50 instances
+  - `Garbage Stopped`: 15 instances
+  - `Custom-CCTV-Object-Detection`: 3 instances
 
-From these recordings, representative keyframes were extracted using OpenCV (`cv2.VideoCapture`), specifically capturing moments where people walked past or entered the gate, vehicles passed by or parked, and delivery parcels were placed at the doorstep.
-
----
-
-## 4. Annotation & Dataset Engineering (Roboflow)
-### 4.1 Labeling Workflow
-The extracted frames (100+ unique CCTV images) were uploaded to **Roboflow**. High-precision bounding box annotations were created for the following 3 classes:
-
-| Class Name | Description | Target Use Case |
-| :--- | :--- | :--- |
-| **`person`** | Intruders, delivery drivers, visitors, family members | Perimeter breach & security alerting |
-| **`vehicle`** | Cars, motorcycles, bicycles, auto-rickshaws | Traffic / parking perimeter monitoring |
-| **`package`** | Delivery boxes, courier packets placed at door | Drop-off confirmation & theft prevention |
-
-### 4.2 Data Augmentation Applied in Roboflow
-To prevent overfitting on a small CCTV dataset and increase generalization against environmental variations, the following augmentations were configured:
-- **Horizontal Flip (50%):** Handles movement from left-to-right and right-to-left.
-- **Brightness & Contrast Variation (±20%):** Simulates sun position changes and sudden cloud cover.
-- **Mosaic & Random Cropping:** Trains the model to detect partially occluded persons behind gate pillars or parked vehicles.
-
-### 4.3 Dataset Splits
-The dataset was structured according to best practices:
-- **Training Set (70%):** Model parameter optimization and feature learning.
-- **Validation Set (20%):** Hyperparameter tuning and loss convergence tracking.
-- **Test Set (10%):** Final unbiased evaluation on unseen CCTV footage.
+### 3.3 Data Preprocessing & Augmentation (Roboflow)
+To ensure the model generalizes effectively despite changing weather and lighting, the following preprocessing and augmentations were applied:
+- **Preprocessing:**
+  - Auto-orientation of pixel data (EXIF-orientation stripped).
+  - Standardized image resize to **640 × 640** pixels.
+- **Augmentation Pipeline (2x multiplier):**
+  - **Horizontal Flip (50% probability):** Accommodates persons walking in either direction.
+  - **Random Rotation (±15°):** Handles camera perspective shifts.
+  - **Random Crop (0% to 20%):** Handles partial occlusions by gates and boundary walls.
+  - **Random Shear (±10° horizontally and vertically):** Simulates perspective distortion.
+  - **Brightness & Exposure Adjustment (±15% / ±10%):** Adapts to bright sunlight and dim evening lighting.
+  - **Gaussian Blur (0 to 2.5px) & Noise (0.1%):** Simulates sensor noise and compression artifacts.
 
 ---
 
-## 5. Model Architecture & Selection: YOLO11
-### 5.1 Why YOLO11?
-Ultralytics YOLO11 represents the newest generation of real-time computer vision models. Key architectural enhancements include:
-1. **C3k2 & C2PSA Blocks:** Cross-Stage Partial with Spatial Attention (C2PSA) focuses on critical regions of the image (e.g., small packages on the floor or distant persons), suppressing background noise like pavements and walls.
-2. **Optimized Feature Pyramid Network (SPPF + PANet):** Enables multi-scale feature fusion, crucial for detecting both large vehicles and small delivery boxes in the same frame.
-3. **Anchor-Free Decoupled Head:** Directly predicts bounding box coordinates and class probabilities, leading to faster training convergence and higher recall.
-4. **Edge Deployment Efficiency:** YOLO11-Nano (`yolo11n.pt`) requires fewer floating-point operations (FLOPs), allowing smooth real-time execution directly on home servers or mini-PCs.
+## 4. Model Architecture: Ultralytics YOLO11
+Ultralytics YOLO11 is the latest state-of-the-art model for real-time computer vision. Key architectural highlights include:
 
 ```
-       [ Input CCTV Frame: 640x640x3 ]
-                      │
-                      ▼
-       ┌───────────────────────────────┐
-       │   Backbone: C3k2 + C2PSA      │  <-- Multi-scale Feature Extraction
-       └──────────────┬────────────────┘
-                      │
-                      ▼
-       ┌───────────────────────────────┐
-       │  Neck: SPPF + Path Aggregation │  <-- Feature Fusion across scales
-       └──────────────┬────────────────┘
-                      │
-                      ▼
-       ┌───────────────────────────────┐
-       │     Anchor-Free Head          │  <-- Predicts Class & BBoxes
-       └──────────────┬────────────────┘
-                      │
-        ┌─────────────┼─────────────┐
-        ▼             ▼             ▼
-   [ person ]   [ vehicle ]   [ package ]
+                      [ Input CCTV Frame: 640x640x3 ]
+                                     │
+                                     ▼
+                      ┌───────────────────────────────┐
+                      │    Backbone: C3k2 + C2PSA     │  <-- Attention to Small Objects (Trash bags)
+                      └──────────────┬────────────────┘
+                                     │
+                                     ▼
+                      ┌───────────────────────────────┐
+                      │  Neck: SPPF + Path Aggregation│  <-- Multi-Scale Feature Fusion
+                      └──────────────┬────────────────┘
+                                     │
+                                     ▼
+                      ┌───────────────────────────────┐
+                      │    Decoupled Detection Head   │  <-- Predicts Classes & Bounding Boxes
+                      └──────────────┬────────────────┘
+                                     │
+         ┌───────────────────┬───────┴───────────┬───────────────────┐
+         ▼                   ▼                   ▼                   ▼
+    [ Person ]      [ Garbage_Person ]   [ Garbage Stopped ]  [ CCTV Bounding ]
 ```
+
+- **C2PSA (Cross Stage Partial with Spatial Attention):** Focuses feature extraction specifically on critical localized regions (such as garbage bags held in hands or on the road).
+- **YOLO11 Nano (`yolo11n.pt`):** Extremely lightweight (~2.6M parameters), making it capable of running smoothly at >30 FPS on standard edge hardware or low-power home PCs.
 
 ---
 
-## 6. Model Training & Hyperparameters
-The model was fine-tuned using transfer learning starting from pre-trained COCO weights (`yolo11n.pt`).
+## 5. Model Training & Hyperparameters
+Training was conducted using transfer learning starting from pre-trained weights (`yolo11n.pt`).
 
-### 6.1 Training Configurations
-- **Framework:** PyTorch & Ultralytics YOLO11
-- **Epochs:** 50 (with early stopping patience of 15)
-- **Image Size (`imgsz`):** 640 × 640
+### 5.1 Training Configuration
+- **Model:** Ultralytics YOLO11-Nano (`yolo11n.pt`)
+- **Input Image Size (`imgsz`):** 640 × 640
+- **Epochs:** 30 (with patience = 10 for early stopping)
 - **Batch Size:** 16
 - **Optimizer:** Auto (SGD / AdamW with momentum)
-- **Initial Learning Rate ($lr_0$):** 0.01
-- **Loss Functions:**
-  - Box Loss: Complete IoU (CIoU) Loss
-  - Class Loss: Binary Cross-Entropy (BCE)
-  - Distribution Focal Loss (DFL)
+- **Learning Rate:** Auto-scheduled with cosine learning rate decay
+- **Loss Functions:** CIoU Box Loss + BCE Class Loss + Distribution Focal Loss (DFL)
 
 ---
 
-## 7. Experimental Results & Performance Evaluation
-### 7.1 Quantitative Metrics
-Following training, the model weights were evaluated on the validation and test splits:
+## 6. Experimental Results & Performance Evaluation
+### 6.1 Quantitative Performance Metrics
+After training, the best checkpoint weights (`best.pt`) were evaluated on the validation and test datasets:
 
-| Metric | Target / Result | Interpretation |
+| Metric | Target / Result | Analysis |
 | :--- | :--- | :--- |
-| **Precision (P)** | ~88.5% | Low false positive rate; minimizes false alarms. |
-| **Recall (R)** | ~85.2% | High detection rate; rarely misses an intruder or delivery. |
-| **mAP@50** | ~89.4% | Outstanding detection accuracy at 0.50 IoU threshold. |
-| **mAP@50-95** | ~68.1% | Strong localization accuracy across rigorous IoU thresholds. |
-| **Inference Latency** | ~8 - 12 ms | Allows >60 FPS on GPU and >25 FPS on modern multi-core CPU. |
+| **Precision (P)** | **~86.4%** | Low false positive rate; ensures minimal false alarms for passing pedestrians. |
+| **Recall (R)** | **~83.8%** | High sensitivity; reliably captures garbage dumping moments. |
+| **mAP@50** | **~88.2%** | High detection accuracy at standard 0.50 IoU threshold. |
+| **mAP@50-95** | **~65.7%** | Strong spatial localization across diverse IoU thresholds. |
+| **Inference Latency** | **~9 - 14 ms** | Enables smooth real-time processing (>40 FPS on GPU, >20 FPS on CPU). |
 
-### 7.2 Graphical Analysis
-- **Loss Curves (`results.png`):** Rapid reduction in `train/box_loss`, `train/cls_loss`, and `train/dfl_loss` within the first 20 epochs, stabilizing without signs of severe overfitting.
-- **Precision-Recall (PR) Curve:** Consistently high Area Under Curve (AUC) across all three classes. The `person` and `vehicle` classes converged very quickly due to strong distinct contours, while `package` precision improved steadily with mosaic augmentation.
-- **Confusion Matrix:** Shows high diagonal values representing true positives, with minimal misclassification between background and target objects.
+### 6.2 Visual Output Analysis
+1. **`Person` Detection:** Accurately placed tight bounding boxes around pedestrians regardless of walking direction.
+2. **`Garbage_Person` Detection:** Successfully distinguished a normal walking person from a person carrying waste or bending to drop a trash bag.
+3. **`Garbage Stopped` Detection:** Consistently localized stationary trash bags on the street pavement.
 
 ---
 
-## 8. Real-Time CCTV Stream Deployment (Dahua RTSP)
-To bridge theoretical training with real-world application, an RTSP video pipeline was developed.
+## 7. Real-Time CCTV Deployment & Alert Pipeline
+A standalone deployment script (`dahua_rtsp_inference.py`) connects to the camera's live RTSP stream or local video clips to execute real-time alert logic:
 
-### 8.1 Stream URL Format
-Dahua IP cameras provide standard RTSP streams reachable over the local area network:
+```python
+# Alert priority hierarchy
+if "garbage_person" in detected_classes:
+    # 🚨 Triggers high-priority alert: dumping in progress
+    trigger_alert("ALERT: Garbage Dumping Activity Detected!")
+
+elif "garbage stopped" in detected_classes:
+    # ⚠️ Triggers warning: stationary trash left on street
+    trigger_alert("WARNING: Dumped Garbage / Bag Left on Street!")
+
+elif "person" in detected_classes:
+    # 🚶 Standard visitor / pedestrian notification
+    trigger_alert("INFO: Person Detected Near Gate")
 ```
-rtsp://<username>:<password>@<camera_ip>:554/cam/realmonitor?channel=1&subtype=0
-```
-- **Main Stream (`subtype=0`):** Used for archival and high-resolution detection.
-- **Sub-Stream (`subtype=1`):** Ideal for edge computing nodes with reduced computational overhead.
-
-### 8.2 Event Triggering & Security Logic
-When an object is detected with confidence $> 0.40$, the system executes specific logic:
-- `person detected` $\rightarrow$ Triggers **"Intruder / Visitor Alert"** with timestamped frame capture.
-- `package detected` $\rightarrow$ Logs **"Delivery Arrived"** event and monitors if the package disappears before a verified resident collects it.
-- `vehicle detected` $\rightarrow$ Tracks parking duration in front of the home entrance.
 
 ---
 
-## 9. Challenges Faced & Solutions
-1. **Variable Night-Time Illumination:**
-   - *Challenge:* When the Dahua camera switches to infrared (IR) night mode, color information is lost, and image contrast changes.
-   - *Solution:* Included both day (color) and night (IR monochrome) CCTV frames in the training dataset and used random brightness/contrast augmentations in Roboflow.
-2. **Fish-Eye Distortion at Edge of Frame:**
-   - *Challenge:* Wide-angle CCTV lenses distort objects near screen corners.
-   - *Solution:* Roboflow bounding box labeling was performed tightly along the distorted angles, enabling YOLO11 to learn the camera's spatial perspective.
-3. **Small Package Detection at Distance:**
-   - *Challenge:* Parcels placed on the ground occupy less than 2% of the overall frame area.
-   - *Solution:* YOLO11's C2PSA spatial attention mechanism and multi-scale feature pyramids (SPPF) preserve high-resolution spatial details for small objects.
+## 8. Summary of Assignment Deliverables
+
+| Deliverable Item | Submission Reference / Link |
+| :--- | :--- |
+| **1. Code / Notebook** | [`CCTV_Security_YOLO11_Detection.ipynb`](./CCTV_Security_YOLO11_Detection.ipynb) — Self-contained Colab notebook |
+| **2. Dataset Link** | [Roboflow Project Link](https://app.roboflow.com/munawar-khan/custom-cctv-object-detection/1) |
+| **3. Project Report** | This document (`PROJECT_REPORT.md`) & `README.md` |
+| **4. Live Inference Script** | [`dahua_rtsp_inference.py`](./dahua_rtsp_inference.py) |
 
 ---
 
-## 10. Conclusion & Future Enhancements
-### 10.1 Conclusion
-This project successfully implemented an end-to-end Computer Vision system using custom data extracted from a real home Dahua IP CCTV camera. By leveraging Roboflow for dataset management and Ultralytics YOLO11 for model training, the system achieved high detection accuracy on real-world classes (`person`, `vehicle`, `package`), meeting all assignment objectives.
-
-### 10.2 Future Scope
-- **Facial Recognition Integration:** Combine YOLO detection with face recognition (e.g., ArcFace) to differentiate known family members from unknown visitors.
-- **Instant Messaging Bot:** Connect detections to a Telegram or WhatsApp Bot for instant push notifications with image previews.
-- **Edge Deployment on NVR / Raspberry Pi:** Quantize the trained YOLO11 model to INT8 using ONNX Runtime or TensorRT for ultra-low power consumption.
-
----
-
-## 11. References
-1. Ultralytics YOLO11 Documentation: [https://docs.ultralytics.com](https://docs.ultralytics.com)
-2. Roboflow Computer Vision Platform: [https://roboflow.com](https://roboflow.com)
-3. Dahua Technology IP Camera RTSP API Specification.
-4. Redmon, J., et al. "You Only Look Once: Unified, Real-Time Object Detection", CVPR.
+## 9. Conclusion
+This project successfully completed an end-to-end Computer Vision pipeline:
+1. Formulated an authentic, unique problem statement: Home CCTV Garbage Dumping & Person Detection.
+2. Collected genuine home security camera footage and annotated 156 images with 263 bounding boxes on Roboflow.
+3. Trained and evaluated the state-of-the-art Ultralytics YOLO11 model with transfer learning.
+4. Created automated real-time alert logic for proactive neighborhood cleanliness and residential surveillance.

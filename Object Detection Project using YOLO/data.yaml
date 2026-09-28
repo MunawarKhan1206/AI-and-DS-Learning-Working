@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 4
+names: ['Custom-CCTV-Object-Detection', 'Garbage Stopped', 'Garbage_Person', 'Person']
+
+roboflow:
+  workspace: munawar-khan
+  project: custom-cctv-object-detection
+  version: 1
+  license: Private
+  url: https://app.roboflow.com/munawar-khan/custom-cctv-object-detection/1

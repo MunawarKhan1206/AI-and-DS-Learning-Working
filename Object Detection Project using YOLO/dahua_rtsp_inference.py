@@ -70,21 +70,21 @@ def main():
 
         # Security Alert Banner logic
         alert_y = 35
-        if any("person" in lbl for lbl in detected_labels):
-            cv2.rectangle(annotated_frame, (10, alert_y - 25), (420, alert_y + 10), (0, 0, 180), -1)
-            cv2.putText(annotated_frame, "ALERT: Person / Intruder Detected!", 
+        if any("garbage_person" in lbl for lbl in detected_labels):
+            cv2.rectangle(annotated_frame, (10, alert_y - 25), (480, alert_y + 10), (0, 0, 200), -1)
+            cv2.putText(annotated_frame, "ALERT: Garbage Dumping Activity!", 
                         (15, alert_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             alert_y += 40
 
-        if any("package" in lbl for lbl in detected_labels):
-            cv2.rectangle(annotated_frame, (10, alert_y - 25), (440, alert_y + 10), (0, 140, 255), -1)
-            cv2.putText(annotated_frame, "NOTICE: Package Detected at Doorstep!", 
+        if any("garbage stopped" in lbl for lbl in detected_labels):
+            cv2.rectangle(annotated_frame, (10, alert_y - 25), (470, alert_y + 10), (0, 140, 255), -1)
+            cv2.putText(annotated_frame, "WARNING: Garbage Dumped on Ground!", 
                         (15, alert_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             alert_y += 40
 
-        if any("vehicle" in lbl or "car" in lbl or "motorcycle" in lbl for lbl in detected_labels):
+        if any(lbl == "person" for lbl in detected_labels):
             cv2.rectangle(annotated_frame, (10, alert_y - 25), (380, alert_y + 10), (180, 100, 0), -1)
-            cv2.putText(annotated_frame, "Vehicle Detected Near Perimeter", 
+            cv2.putText(annotated_frame, "Person Detected Near Gate", 
                         (15, alert_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
         # FPS Counter

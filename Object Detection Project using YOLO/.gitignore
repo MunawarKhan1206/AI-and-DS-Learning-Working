@@ -1,0 +1,25 @@
+# Ignore large dataset zip files
+*.zip
+*.tar.gz
+
+# Python cache & runs
+__pycache__/
+*.py[cod]
+runs/
+*.pt
+*.onnx
+
+# Protect CCTV images privacy on GitHub
+train/images/
+valid/images/
+test/images/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.jpg
+/Object Detection Project using YOLO/test/images
+/Object Detection Project using YOLO/test
+/Object Detection Project using YOLO/train
