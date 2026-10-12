@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['Ball', 'Goalkeeper', 'Referee', 'Team A', 'Team B']
+
+roboflow:
+  workspace: davids
+  project: offside-football
+  version: 1
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/davids/offside-football/dataset/1
