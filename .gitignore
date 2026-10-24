@@ -2,3 +2,31 @@
 /Object Detection Project using YOLO/test/images
 /Object Detection Project using YOLO/test
 /Object Detection Project using YOLO/train
+
+# Environment variables & secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.env
+
+# Dependencies & Build artifacts
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+build/
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
