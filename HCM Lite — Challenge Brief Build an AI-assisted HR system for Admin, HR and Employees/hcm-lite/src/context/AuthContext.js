@@ -32,12 +32,17 @@ export function AuthProvider({ children }) {
     localStorage.setItem('hcm_user', JSON.stringify(userData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
     setUser(null);
     setToken(null);
     localStorage.removeItem('hcm_token');
     localStorage.removeItem('hcm_user');
-    // Clear cookie
+    // Clear client-accessible cookie
     document.cookie = 'hcm_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     window.location.href = '/';
   };

@@ -223,13 +223,13 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
               <ChevronDown className={`h-3.5 w-3.5 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Direct Quick Logout Button on Navbar */}
+            {/* Direct Prominent Logout Button on Navbar (Visible on all screens) */}
             <button
               onClick={logout}
-              title="Logout"
-              className="hidden sm:flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition active:scale-95 shadow-2xs"
+              title="Logout from system"
+              className="flex items-center gap-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold transition active:scale-95 shadow-2xs shrink-0 cursor-pointer"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-3.5 w-3.5 shrink-0" />
               <span>Logout</span>
             </button>
 
