@@ -1,17 +1,18 @@
 /**
  * POST /api/ai/chat
  *
- * AI Assistant powered by xAI Grok (OpenAI-compatible API).
- * Falls back to rule-based responses if AI_API_KEY is not set.
+ * AI Assistant powered by Google Gemini (free tier via @google/generative-ai).
+ * Falls back to smart rule-based responses if AI_API_KEY is not set.
  *
  * Features:
  *  - Role-scoped tool calling (Admin/HR/Employee data gates)
  *  - Dashboard summarizer (mode: 'summarize_dashboard')
  *  - Smart leave extraction (mode: 'smart_leave')
- *  - General HR Q&A with tool calling
- *  - 15-second timeout + friendly fallback
+ *  - General HR Q&A with Gemini function calling
  *  - Rate limit: 20 requests/user/hour
  *  - Every call logged to AILog collection
+ *
+ * Get a FREE Gemini key: https://aistudio.google.com/ → "Get API key"
  */
 import { NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
@@ -44,135 +45,137 @@ COMPANY POLICIES & BUSINESS RULES:
 5. If you don't know, say "I don't have enough data to answer that from company records."
 Always base answers on tool results or these policy rules.`;
 
-// ─── tool definitions (OpenAI function-calling format) ────────────────────────
-const TOOLS = [
+// ─── tool definitions (Gemini functionDeclarations format) ───────────────────
+const GEMINI_TOOLS = [
   {
-    type: 'function',
-    function: {
-      name: 'get_headcount',
-      description: 'Get company active employee headcount and status breakdown',
-      parameters: { type: 'object', properties: {} },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_attendance_summary',
-      description: "Get today's attendance summary (present, late, half-day, on-leave, absent)",
-      parameters: { type: 'object', properties: {} },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_late_comers',
-      description: "Get today's late arrivals with delay minutes (HR/Admin only)",
-      parameters: { type: 'object', properties: {} },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_leave_summary',
-      description: 'Get count of employees on leave today and pending leave approvals',
-      parameters: { type: 'object', properties: {} },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_my_leave_balance',
-      description: "Get the logged-in employee's remaining leave quotas for each leave type",
-      parameters: { type: 'object', properties: {} },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'get_payroll_summary',
-      description: 'Get monthly payroll cost summary – gross, net, tax (HR/Admin only)',
-      parameters: {
-        type: 'object',
-        properties: {
-          month: { type: 'string', description: 'Month in YYYY-MM format, e.g. 2026-10' },
+    functionDeclarations: [
+      {
+        name: 'get_headcount',
+        description: 'Get company active employee headcount and status breakdown',
+        parameters: { type: 'OBJECT', properties: {} },
+      },
+      {
+        name: 'get_attendance_summary',
+        description: "Get today's attendance summary (present, late, half-day, on-leave, absent)",
+        parameters: { type: 'OBJECT', properties: {} },
+      },
+      {
+        name: 'get_late_comers',
+        description: "Get today's late arrivals with delay minutes (HR/Admin only)",
+        parameters: { type: 'OBJECT', properties: {} },
+      },
+      {
+        name: 'get_leave_summary',
+        description: 'Get count of employees on leave today and pending leave approvals',
+        parameters: { type: 'OBJECT', properties: {} },
+      },
+      {
+        name: 'get_my_leave_balance',
+        description: "Get the logged-in employee's remaining leave quotas for each leave type",
+        parameters: { type: 'OBJECT', properties: {} },
+      },
+      {
+        name: 'get_payroll_summary',
+        description: 'Get monthly payroll cost summary – gross, net, tax (HR/Admin only)',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            month: { type: 'STRING', description: 'Month in YYYY-MM format, e.g. 2026-10' },
+          },
         },
       },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'search_employees',
-      description: 'Search employees by name or employee code',
-      parameters: {
-        type: 'object',
-        properties: {
-          query: { type: 'string', description: 'Search term' },
+      {
+        name: 'search_employees',
+        description: 'Search employees by name or employee code',
+        parameters: {
+          type: 'OBJECT',
+          properties: {
+            query: { type: 'STRING', description: 'Search term' },
+          },
+          required: ['query'],
         },
-        required: ['query'],
       },
-    },
+    ],
   },
 ];
 
-// ─── Grok API call (OpenAI-compatible) ───────────────────────────────────────
-async function callGrok(messages, tools, apiKey) {
-  const model   = process.env.AI_MODEL || 'grok-3-mini';
-  const baseURL = process.env.AI_BASE_URL || 'https://api.x.ai/v1';
-
-  const body = {
-    model,
-    messages,
-    temperature: 0.3,
-    max_tokens: 1024,
-  };
-  if (tools && tools.length) body.tools = tools;
-
-  const res = await fetch(`${baseURL}/chat/completions`, {
-    method:  'POST',
-    headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(15000), // 15s hard timeout
+// ─── Gemini API call with function-calling ────────────────────────────────────
+async function callGemini(contents, tools, apiKey) {
+  // Dynamic import so Next.js doesn't crash if package missing
+  const { GoogleGenerativeAI } = await import('@google/generative-ai');
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: process.env.AI_MODEL || 'gemini-1.5-flash',
+    systemInstruction: SYSTEM_PROMPT,
+    generationConfig: { temperature: 0.3, maxOutputTokens: 1024 },
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Grok API error ${res.status}: ${err}`);
-  }
+  const result = await model.generateContent({
+    contents,
+    tools: tools && tools.length ? tools : undefined,
+  });
 
-  return res.json();
+  return result.response;
 }
 
-// ─── fallback (no API key) ────────────────────────────────────────────────────
+// ─── smart rule-based fallback (no API key needed) ───────────────────────────
 async function fallbackResponse(lowerMsg, user) {
   const toolsCalled = [];
   let reply = '';
 
-  if (lowerMsg.includes('leave balance') || lowerMsg.includes('my leave')) {
+  if (lowerMsg.includes('leave balance') || lowerMsg.includes('my leave') || lowerMsg.includes('remaining leave')) {
     const res = await executeTool('get_my_leave_balance', {}, user);
     toolsCalled.push('get_my_leave_balance');
-    reply = `Your current leave balances:\n${(res.balances || []).map((b) => `• ${b.name}: ${b.remaining} remaining (used ${b.used} of ${b.quota})`).join('\n')}`;
-  } else if (lowerMsg.includes('headcount') || lowerMsg.includes('how many employee')) {
+    if (res.error) {
+      reply = res.error;
+    } else {
+      const lines = (res.balances || []).map(
+        (b) => `• **${b.name}**: ${b.remaining} days remaining (used ${b.used} of ${b.quota === 999 ? '∞' : b.quota})`
+      );
+      reply = `📋 **Your Leave Balances (${new Date().getFullYear()}):**\n\n${lines.join('\n')}`;
+    }
+  } else if (lowerMsg.includes('headcount') || lowerMsg.includes('how many employee') || lowerMsg.includes('total employee')) {
     const res = await executeTool('get_headcount', {}, user);
     toolsCalled.push('get_headcount');
-    reply = `The company currently has ${res.totalActive ?? res.totalActiveHeadcount} active employees.`;
-  } else if (lowerMsg.includes('attendance') || lowerMsg.includes('present today')) {
+    const total = res.totalActive ?? res.totalActiveHeadcount;
+    reply = `👥 The company currently has **${total} active employees**.`;
+    if (res.active !== undefined) {
+      reply += `\n• Active: ${res.active}\n• On Probation: ${res.probation}\n• Resigned: ${res.resigned}`;
+    }
+  } else if (lowerMsg.includes('attendance') || lowerMsg.includes('present today') || lowerMsg.includes('who is present')) {
     const res = await executeTool('get_attendance_summary', {}, user);
     toolsCalled.push('get_attendance_summary');
-    reply = `Today's attendance: ${res.present} present, ${res.late} late, out of ${res.totalHeadcount} total.`;
+    reply = `📊 **Today's Attendance (${res.date}):**\n• Present: ${res.present}\n• Late: ${res.late}\n• Half-day: ${res.halfDay}\n• Total Headcount: ${res.totalHeadcount}`;
   } else if (lowerMsg.includes('late') || lowerMsg.includes('who came late')) {
     const res = await executeTool('get_late_comers', {}, user);
     toolsCalled.push('get_late_comers');
-    reply = res.error ?? `${res.count} late arrivals today.`;
-  } else if (lowerMsg.includes('on leave') || lowerMsg.includes('who is on leave')) {
+    if (res.error) {
+      reply = res.error;
+    } else if (res.count === 0) {
+      reply = '✅ No late arrivals today!';
+    } else {
+      const names = (res.lateComers || []).map((l) => `• ${l.name} (${l.code}) — ${l.lateMinutes} min late`).join('\n');
+      reply = `⏰ **${res.count} late arrival(s) today:**\n${names}`;
+    }
+  } else if (lowerMsg.includes('on leave') || lowerMsg.includes('who is on leave') || lowerMsg.includes('pending leave') || lowerMsg.includes('leave request')) {
     const res = await executeTool('get_leave_summary', {}, user);
     toolsCalled.push('get_leave_summary');
-    reply = `${res.onLeaveToday} employee(s) on leave today. ${res.pendingApprovals} leave request(s) pending approval.`;
+    reply = `🏖️ **Leave Summary:**\n• On Leave Today: ${res.onLeaveToday} employee(s)\n• Pending Approvals: ${res.pendingApprovals} request(s)`;
+  } else if (lowerMsg.includes('office hour') || lowerMsg.includes('start time') || lowerMsg.includes('what time') || lowerMsg.includes('late arrival rule') || lowerMsg.includes('working hour')) {
+    reply = `🕘 **Office Hours & Attendance Policy:**\n• Office starts at **09:00 AM**\n• Grace period: **15 minutes** (late after 09:15 AM)\n• Half-day: if worked less than **5 hours**\n• Only **one check-in per day** is allowed`;
+  } else if (lowerMsg.includes('leave policy') || lowerMsg.includes('leave quota') || lowerMsg.includes('annual leave') || lowerMsg.includes('sick leave') || lowerMsg.includes('casual leave')) {
+    reply = `📅 **Leave Policy:**\n• **Annual Leave**: 14 days/year\n• **Sick Leave**: 8 days/year\n• **Casual Leave**: 10 days/year\n• **Unpaid Leave**: Unlimited\n\nLeave is counted in **working days only** (weekends & public holidays excluded). Overlapping or over-quota requests are rejected.`;
+  } else if (lowerMsg.includes('payroll') || lowerMsg.includes('salary policy') || lowerMsg.includes('how is salary calculated') || lowerMsg.includes('tax')) {
+    if (user.role === 'employee') {
+      reply = '💰 **Salary Calculation:**\nGross Salary = Basic × 1.5 (includes HRA 40% + Medical 10% of basic).\n\nFor your specific payslip, check the **Payslips** section in your dashboard.';
+    } else {
+      reply = '💰 **Payroll Policy:**\nGross = Basic × 1.5 (HRA 40% + Medical 10%). Per-day rate = Gross ÷ working days.\nDeductions: absent days + unpaid days + 0.5 × half-days.\n\nHR drafts payroll → Admin finalizes → locked once finalized.';
+    }
+  } else if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('help')) {
+    const roleLabel = user.role === 'admin' ? 'Admin' : user.role === 'hr' ? 'HR Manager' : 'Employee';
+    reply = `👋 Hello, **${roleLabel}**! I'm your HCM Lite AI Assistant.\n\nI can help you with:\n• 📋 Leave balances & policies\n• 📊 Attendance summaries\n• 👥 Employee headcount\n• 🕘 Office hours & rules\n• 💰 Payroll policies\n\nJust ask me anything!`;
   } else {
-    reply = 'I\'m your HCM Lite AI Assistant. Ask me about attendance, leave balances, headcount, payroll policies, or office rules. (Set AI_API_KEY in .env.local for full AI capabilities.)';
+    reply = `🤖 I'm your HCM Lite AI Assistant. I can answer questions about:\n\n• **Leave balances** — "What is my leave balance?"\n• **Attendance** — "Who is present today?"\n• **Headcount** — "How many employees do we have?"\n• **Office rules** — "What are the office hours?"\n• **Leave policy** — "What is the annual leave quota?"\n\n_(Tip: Add a Gemini API key in .env.local for full AI capabilities)_`;
   }
 
   return { reply, toolsCalled };
@@ -192,62 +195,87 @@ export async function POST(req) {
       );
     }
 
-    const body               = await req.json();
+    const body                    = await req.json();
     const { message, mode, kpiData } = body;
-    const apiKey             = process.env.AI_API_KEY;
+    const apiKey                  = process.env.AI_API_KEY?.trim() || '';
+    const hasKey                  = apiKey.length > 10;
 
     // ── Mode: Dashboard Summarizer ──────────────────────────────────────────
     if (mode === 'summarize_dashboard') {
-      if (!apiKey) {
-        const k = kpiData || {};
+      const k = kpiData || {};
+      if (!hasKey) {
         const bullets = [
-          `• Headcount: ${k.headcount ?? 'N/A'} active employees.`,
-          `• Today: ${k.presentToday ?? 0} present, ${k.lateToday ?? 0} late, ${k.onLeaveToday ?? 0} on leave.`,
-          `• Pending approvals: ${k.pendingApprovals ?? 0} leave request(s) awaiting HR review.`,
-          `• Attendance rate: ${k.attendanceRate ?? 'N/A'}%.`,
+          `• **Headcount:** ${k.headcount ?? 'N/A'} active employees`,
+          `• **Today:** ${k.presentToday ?? 0} present, ${k.lateToday ?? 0} late, ${k.onLeaveToday ?? 0} on leave`,
+          `• **Pending approvals:** ${k.pendingApprovals ?? 0} leave request(s) awaiting HR review`,
+          `• **Attendance rate:** ${k.attendanceRate ?? 'N/A'}%`,
         ];
         return NextResponse.json({ reply: bullets.join('\n'), is_ai_generated: true });
       }
 
-      const data = await callGrok([
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user',   content: `Summarize these HCM KPI metrics into 3-5 concise bullet insights using ONLY the numbers provided:\n${JSON.stringify(kpiData || {}, null, 2)}` },
-      ], [], apiKey);
+      try {
+        const response = await callGemini([
+          {
+            role: 'user',
+            parts: [{ text: `Summarize these HCM KPI metrics into 3-5 concise bullet insights using ONLY the numbers provided:\n${JSON.stringify(k, null, 2)}` }],
+          },
+        ], [], apiKey);
 
-      return NextResponse.json({
-        reply:           data.choices[0].message.content,
-        is_ai_generated: true,
-      });
+        return NextResponse.json({
+          reply:           response.text(),
+          is_ai_generated: true,
+        });
+      } catch (aiErr) {
+        console.warn('[AI summarize] Gemini error, using fallback:', aiErr.message);
+        const bullets = [
+          `• **Headcount:** ${k.headcount ?? 'N/A'} active employees`,
+          `• **Today:** ${k.presentToday ?? 0} present, ${k.lateToday ?? 0} late, ${k.onLeaveToday ?? 0} on leave`,
+          `• **Pending approvals:** ${k.pendingApprovals ?? 0} leave request(s) awaiting review`,
+          `• **Attendance rate:** ${k.attendanceRate ?? 'N/A'}%`,
+        ];
+        return NextResponse.json({ reply: bullets.join('\n'), is_ai_generated: true });
+      }
     }
 
     // ── Mode: Smart Leave Extraction ────────────────────────────────────────
     if (mode === 'smart_leave') {
       const today = formatDate(new Date());
-      if (!apiKey) {
+      if (!hasKey) {
         return NextResponse.json({
           smart_form:      { type: 'CASUAL', start_date: today, end_date: today, reason: message },
           is_ai_generated: true,
         });
       }
 
-      const data = await callGrok([
-        { role: 'system', content: SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Extract leave details from: "${message}". Today is ${today}.
+      try {
+        const response = await callGemini([
+          {
+            role: 'user',
+            parts: [{
+              text: `Extract leave details from: "${message}". Today is ${today}.
 Return ONLY valid JSON (no markdown):
 {"type":"ANNUAL"|"SICK"|"CASUAL"|"UNPAID","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD","reason":"string"}`,
-        },
-      ], [], apiKey);
+            }],
+          },
+        ], [], apiKey);
 
-      const text  = data.choices[0].message.content || '';
-      const match = text.match(/\{[\s\S]*\}/);
-      const parsed = match ? (() => { try { return JSON.parse(match[0]); } catch { return null; } })() : null;
+        const text   = response.text() || '';
+        const match  = text.match(/\{[\s\S]*\}/);
+        const parsed = match
+          ? (() => { try { return JSON.parse(match[0]); } catch { return null; } })()
+          : null;
 
-      return NextResponse.json({
-        smart_form:      parsed ?? { type: 'CASUAL', start_date: today, end_date: today, reason: message },
-        is_ai_generated: true,
-      });
+        return NextResponse.json({
+          smart_form:      parsed ?? { type: 'CASUAL', start_date: today, end_date: today, reason: message },
+          is_ai_generated: true,
+        });
+      } catch (aiErr) {
+        console.warn('[AI smart_leave] Gemini error, using fallback:', aiErr.message);
+        return NextResponse.json({
+          smart_form:      { type: 'CASUAL', start_date: today, end_date: today, reason: message },
+          is_ai_generated: true,
+        });
+      }
     }
 
     // ── Mode: General Chat ──────────────────────────────────────────────────
@@ -261,76 +289,96 @@ Return ONLY valid JSON (no markdown):
     if (
       user.role === 'employee' &&
       (lowerMsg.includes('salary') || lowerMsg.includes('payroll') || lowerMsg.includes('earn')) &&
-      !lowerMsg.includes('my salary') && !lowerMsg.includes('my payslip')
+      !lowerMsg.includes('my salary') && !lowerMsg.includes('my payslip') &&
+      !lowerMsg.includes('how is salary') && !lowerMsg.includes('salary policy') && !lowerMsg.includes('salary calculated')
     ) {
       const refusal = "⛔ As an employee you are not permitted to view colleagues' salary or company-wide payroll information. You may view your own payslips in your personal dashboard.";
       await AILog.create({ user_id: user._id, user_role: user.role, prompt: message, response: refusal, tools_called: [], latency_ms: Date.now() - t0, status: 'refused' });
       return NextResponse.json({ reply: refusal, is_ai_generated: true });
     }
 
-    // No API key → rule-based fallback
-    if (!apiKey) {
+    // No API key → smart rule-based fallback
+    if (!hasKey) {
       const { reply, toolsCalled } = await fallbackResponse(lowerMsg, user);
       await AILog.create({ user_id: user._id, user_role: user.role, prompt: message, response: reply, tools_called: toolsCalled, latency_ms: Date.now() - t0, status: 'success' });
       return NextResponse.json({ reply, tools_called: toolsCalled, is_ai_generated: true });
     }
 
-    // ── Grok tool-calling loop (max 3 rounds) ───────────────────────────────
-    const messages    = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user',   content: message },
-    ];
-    const toolsCalled = [];
-    let   finalReply  = '';
+    // ── Gemini tool-calling loop (max 3 rounds) ──────────────────────────────
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: process.env.AI_MODEL || 'gemini-1.5-flash',
+        systemInstruction: SYSTEM_PROMPT,
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1024 },
+        tools: GEMINI_TOOLS,
+      });
 
-    for (let round = 0; round < 3; round++) {
-      const data  = await callGrok(messages, TOOLS, apiKey);
-      const msg   = data.choices[0].message;
+      const chat        = model.startChat({ history: [] });
+      const toolsCalled = [];
+      let   finalReply  = '';
 
-      if (msg.tool_calls && msg.tool_calls.length > 0) {
-        // Push assistant message with tool_calls
-        messages.push(msg);
+      // First turn
+      let result = await chat.sendMessage(message);
+      let response = result.response;
 
-        for (const tc of msg.tool_calls) {
-          const fname  = tc.function.name;
-          const fargs  = (() => { try { return JSON.parse(tc.function.arguments || '{}'); } catch { return {}; } })();
-          toolsCalled.push(fname);
+      for (let round = 0; round < 3; round++) {
+        const parts = response.candidates?.[0]?.content?.parts || [];
+        const fnCall = parts.find((p) => p.functionCall);
 
-          const result = await executeTool(fname, fargs, user);
-          messages.push({
-            role:         'tool',
-            tool_call_id: tc.id,
-            content:      JSON.stringify(result),
-          });
+        if (!fnCall) {
+          // No function call — we have the final text
+          finalReply = response.text();
+          break;
         }
-        // Continue loop to let Grok read tool results
-        continue;
+
+        // Execute the function call
+        const { name: fname, args: fargs = {} } = fnCall.functionCall;
+        toolsCalled.push(fname);
+        const toolResult = await executeTool(fname, fargs, user);
+
+        // Send function result back to Gemini
+        result = await chat.sendMessage([
+          {
+            functionResponse: {
+              name:     fname,
+              response: { content: toolResult },
+            },
+          },
+        ]);
+        response = result.response;
       }
 
-      // No more tool calls → we have the final answer
-      finalReply = msg.content || 'I could not generate a response. Please try again.';
-      break;
+      if (!finalReply) {
+        finalReply = response.text() || 'I could not generate a response. Please try again.';
+      }
+
+      await AILog.create({
+        user_id: user._id, user_role: user.role,
+        prompt: message, response: finalReply,
+        tools_called: toolsCalled, latency_ms: Date.now() - t0, status: 'success',
+      });
+
+      return NextResponse.json({ reply: finalReply, tools_called: toolsCalled, is_ai_generated: true });
+
+    } catch (aiErr) {
+      console.warn('[AI chat] Gemini error, falling back to rule-based:', aiErr.message);
+      // Graceful degradation — use rule-based if Gemini fails
+      const { reply, toolsCalled } = await fallbackResponse(lowerMsg, user);
+      await AILog.create({ user_id: user._id, user_role: user.role, prompt: message, response: reply, tools_called: toolsCalled, latency_ms: Date.now() - t0, status: 'fallback' });
+      return NextResponse.json({ reply, tools_called: toolsCalled, is_ai_generated: true });
     }
 
-    if (!finalReply) finalReply = 'I could not generate a response after tool calls. Please rephrase your question.';
-
-    await AILog.create({
-      user_id: user._id, user_role: user.role,
-      prompt: message, response: finalReply,
-      tools_called: toolsCalled, latency_ms: Date.now() - t0, status: 'success',
-    });
-
-    return NextResponse.json({ reply: finalReply, tools_called: toolsCalled, is_ai_generated: true });
-
   } catch (err) {
-    console.error('[AI chat]', err.message);
+    console.error('[AI chat] Fatal error:', err.message);
+    // Last resort — never show raw error to user
     return NextResponse.json(
       {
-        reply: 'The AI assistant encountered a temporary issue. Please try again in a moment.',
+        reply: "I'm here to help! Ask me about leave balances, attendance, office hours, or company headcount.",
         is_ai_generated: true,
-        error: err.message,
       },
-      { status: 200 } // friendly fallback
+      { status: 200 }
     );
   }
 }
