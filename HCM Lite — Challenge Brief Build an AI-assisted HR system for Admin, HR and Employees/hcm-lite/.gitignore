@@ -1,0 +1,51 @@
+# ── Environment & secrets ──────────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+
+# ── Node dependencies ──────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Next.js build output ───────────────────────────────────────
+.next/
+out/
+build/
+
+# ── Package manager locks (keep package.json, skip lock) ───────
+# Uncomment to also ignore lock files:
+# package-lock.json
+# yarn.lock
+
+# ── OS files ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ───────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── IDE / Editor ───────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── Test coverage ──────────────────────────────────────────────
+coverage/
+.nyc_output/
+
+# ── Misc ───────────────────────────────────────────────────────
+*.pem
+*.key
+*.cert
+.vercel/
+.netlify/
