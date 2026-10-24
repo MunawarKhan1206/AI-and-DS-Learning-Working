@@ -267,13 +267,19 @@ export default function SettingsManager() {
   return (
     <div className="space-y-6">
       {/* Page Header: Icon with Heading and Below Description */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-          <Settings className="h-6 w-6" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">System & Organization Settings</h1>
-          <p className="text-xs text-zinc-500">Configure business rules, office timings, leave quotas, and internal user logins</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100">
+            <Settings className="h-6 w-6 shrink-0" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
+              System & Organization Settings
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Configure business rules, office timings, leave quotas, and internal user logins
+            </p>
+          </div>
         </div>
       </div>
 

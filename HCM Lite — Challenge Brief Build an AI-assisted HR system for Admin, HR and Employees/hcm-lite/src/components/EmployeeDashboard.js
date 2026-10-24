@@ -138,22 +138,23 @@ export default function EmployeeDashboard({ onOpenAI, onOpenLeaveForm }) {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="rounded-3xl bg-gradient-to-r from-indigo-600 to-violet-600 p-6 text-white shadow-xl sm:p-8">
+      <div className="rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-600 p-6 sm:p-8 text-white shadow-xl shadow-indigo-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Welcome back, {user?.employee?.first_name || user?.email}!
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
+              Welcome back, {user?.employee?.first_name || user?.email?.split('@')[0]}!
             </h1>
-            <p className="mt-1 text-xs text-indigo-100">
-              Code: <strong>{user?.employee?.employee_code || 'EMP'}</strong> • Role:{' '}
-              <span className="capitalize">{user?.role}</span>
+            <p className="mt-1 text-xs text-indigo-100/90 font-medium">
+              Employee Code: <strong className="text-white">{user?.employee?.employee_code || 'EMP0001'}</strong> • Role:{' '}
+              <span className="capitalize font-semibold text-white">{user?.role}</span>
             </p>
           </div>
           <button
             onClick={onOpenAI}
-            className="flex items-center gap-2 rounded-2xl bg-white/20 backdrop-blur-xs px-4 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-white/30 transition self-start sm:self-center"
+            className="inline-flex items-center gap-2 rounded-2xl bg-white/15 backdrop-blur-md px-4 py-2.5 text-xs font-semibold text-white shadow-2xs hover:bg-white/25 active:scale-95 transition self-start sm:self-center"
           >
-            <Bot className="h-4 w-4" /> Ask My Assistant
+            <Bot className="h-4 w-4 shrink-0 text-amber-300" />
+            <span>Ask My Assistant</span>
           </button>
         </div>
       </div>

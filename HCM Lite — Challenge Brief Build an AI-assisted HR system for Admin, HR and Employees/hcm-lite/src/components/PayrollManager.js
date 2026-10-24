@@ -168,33 +168,37 @@ export default function PayrollManager() {
   return (
     <div className="space-y-6">
       {/* Top Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-            <DollarSign className="h-6 w-6" />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100">
+            <DollarSign className="h-6 w-6 shrink-0" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Payroll Engine & Payslips</h1>
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
+                Payroll Engine & Payslips
+              </h1>
               {isFinalized && (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800 border border-emerald-200">
-                  <Lock className="h-3 w-3" /> Locked & Finalized
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/80 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 border border-emerald-200 shadow-2xs whitespace-nowrap">
+                  <Lock className="h-3 w-3 shrink-0" /> Locked & Finalized
                 </span>
               )}
             </div>
-            <p className="text-xs text-zinc-500">Tax slabs, working days proration, absence deductions & PDF slips</p>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Tax slabs, working days proration, absence deductions & PDF slips
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Month Selector */}
-          <div className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 shadow-2xs">
-            <Calendar className="h-4 w-4 text-zinc-400" />
+          <div className="flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-2xs">
+            <Calendar className="h-4 w-4 text-indigo-600 shrink-0" />
             <input
               type="month"
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="text-xs font-semibold text-zinc-800 focus:outline-hidden"
+              className="bg-transparent text-xs font-bold text-slate-800 focus:outline-hidden"
             />
           </div>
 

@@ -95,34 +95,39 @@ export default function HRDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-            <Users className="h-6 w-6" />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100">
+            <Users className="h-6 w-6 shrink-0" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">HR Operations Dashboard</h1>
-            <p className="text-xs text-zinc-500">Daily workforce attendance, approvals & leave utilization</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
+              HR Operations Dashboard
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Daily workforce attendance, approvals & leave utilization
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
           <button
             onClick={handleAiSummarize}
             disabled={summarizing}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:from-indigo-700 hover:to-violet-700 transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:from-indigo-700 hover:to-violet-700 active:scale-95 transition disabled:opacity-50"
           >
             {summarizing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
             ) : (
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5 shrink-0" />
             )}
-            AI Summarize
+            <span>AI Summarize</span>
           </button>
 
           <button
             onClick={fetchHRAnalytics}
-            className="rounded-xl border border-zinc-200 p-2 text-zinc-600 hover:bg-zinc-50"
+            className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 active:scale-95 transition shadow-2xs"
+            aria-label="Refresh data"
           >
             <RefreshCw className="h-4 w-4" />
           </button>
@@ -131,19 +136,21 @@ export default function HRDashboard() {
 
       {/* AI Summary Box */}
       {aiSummary && (
-        <div className="rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50 p-5 border border-indigo-100 shadow-xs">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-indigo-600" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+        <div className="rounded-3xl bg-gradient-to-r from-indigo-50/80 via-purple-50/50 to-violet-50/80 p-5 sm:p-6 border border-indigo-100 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3 mb-3 border-b border-indigo-100/70">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-2xs">
+                <Sparkles className="h-4 w-4 shrink-0 text-white" />
+              </div>
+              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-indigo-950">
                 AI Operational Insights
               </h3>
             </div>
-            <span className="text-[10px] font-medium text-indigo-600 bg-indigo-100/60 px-2 py-0.5 rounded-full">
-              ✨ AI-generated from live DB metrics
+            <span className="self-start sm:self-auto inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-700 bg-indigo-100/70 px-2.5 py-0.5 rounded-full border border-indigo-200/60">
+              ✨ Generated from live MongoDB metrics
             </span>
           </div>
-          <div className="text-xs text-indigo-950 whitespace-pre-line leading-relaxed">
+          <div className="text-xs sm:text-sm text-slate-800 whitespace-pre-line leading-relaxed font-normal">
             {aiSummary}
           </div>
         </div>

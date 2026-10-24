@@ -17,6 +17,7 @@ import {
   X,
   FileText,
   ChevronDown,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -93,31 +94,35 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
   }
 
   const roleBadgeColors = {
-    admin: 'bg-rose-100 text-rose-700 border-rose-200',
-    hr: 'bg-violet-100 text-violet-700 border-violet-200',
-    employee: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    admin: 'bg-rose-50 text-rose-700 border-rose-200/80 shadow-2xs',
+    hr: 'bg-violet-50 text-violet-700 border-violet-200/80 shadow-2xs',
+    employee: 'bg-emerald-50 text-emerald-700 border-emerald-200/80 shadow-2xs',
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-200 bg-white/95 backdrop-blur-xs">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-2xs">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6">
         {/* Brand & Role */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white font-bold shadow-xs">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-violet-600 text-white font-extrabold shadow-sm shadow-indigo-200 tracking-wider">
             H
           </div>
-          <div>
+          <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg text-zinc-900 tracking-tight">HCM Lite</span>
+              <span className="font-bold text-base sm:text-lg text-slate-900 tracking-tight leading-none">
+                HCM Lite
+              </span>
               <span
-                className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider border ${
-                  roleBadgeColors[user?.role] || 'bg-zinc-100 text-zinc-700 border-zinc-200'
+                className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                  roleBadgeColors[user?.role] || 'bg-slate-100 text-slate-700 border-slate-200'
                 }`}
               >
                 {user?.role}
               </span>
             </div>
-            <p className="text-xs text-zinc-500 hidden sm:block">AI-Assisted HR Management</p>
+            <p className="text-[11px] text-slate-500 font-medium hidden sm:block mt-0.5">
+              AI-Assisted HR Management
+            </p>
           </div>
         </div>
 
@@ -130,14 +135,14 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition ${
+                className={`flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-indigo-50 text-indigo-600 font-semibold shadow-2xs'
-                    : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900'
+                    ? 'bg-indigo-50 text-indigo-700 font-bold shadow-2xs ring-1 ring-indigo-200/60'
+                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
                 }`}
               >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
-                {item.label}
+                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                <span className="whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
@@ -148,10 +153,11 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
           {/* AI Assistant Button */}
           <button
             onClick={onOpenAI}
-            className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:from-indigo-700 hover:to-violet-700 transition"
+            className="group relative inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm shadow-indigo-200 hover:from-indigo-700 hover:to-violet-700 active:scale-95 transition-all"
           >
-            <Bot className="h-4 w-4" />
-            <span className="hidden sm:inline">AI Assistant</span>
+            <Bot className="h-4 w-4 shrink-0 transition-transform group-hover:rotate-6" />
+            <span className="whitespace-nowrap">AI Assistant</span>
+            <Sparkles className="h-3 w-3 text-amber-300 hidden sm:inline" />
           </button>
 
           {/* Notifications Dropdown */}
@@ -161,32 +167,32 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
                 setShowNotifs(!showNotifs);
                 if (!showNotifs && unreadCount > 0) markAllRead();
               }}
-              className="relative rounded-xl border border-zinc-200 p-2 text-zinc-600 hover:bg-zinc-50 transition"
+              className="relative rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 active:scale-95 transition shadow-2xs"
             >
               <Bell className="h-4 w-4" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[10px] font-bold text-white">
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-600 text-[9px] font-bold text-white shadow-xs">
                   {unreadCount}
                 </span>
               )}
             </button>
 
             {showNotifs && (
-              <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-zinc-200 bg-white p-3 shadow-xl z-50">
-                <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
-                  <h4 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
+              <div className="absolute right-0 mt-2 w-80 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl z-50">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                     Notifications
                   </h4>
-                  <span className="text-[11px] text-zinc-400">Recent</span>
+                  <span className="text-[10px] text-slate-400 font-medium">Recent</span>
                 </div>
-                <div className="max-h-64 overflow-y-auto divide-y divide-zinc-50 mt-1">
+                <div className="max-h-64 overflow-y-auto divide-y divide-slate-50 mt-1">
                   {notifications.length === 0 ? (
-                    <p className="py-4 text-center text-xs text-zinc-400">No notifications yet</p>
+                    <p className="py-4 text-center text-xs text-slate-400">No notifications yet</p>
                   ) : (
                     notifications.map((n) => (
                       <div key={n._id} className="py-2 text-xs">
-                        <p className="font-medium text-zinc-900">{n.title}</p>
-                        <p className="text-zinc-500 mt-0.5">{n.message}</p>
+                        <p className="font-semibold text-slate-800">{n.title}</p>
+                        <p className="text-slate-500 mt-0.5 text-[11px] leading-relaxed">{n.message}</p>
                       </div>
                     ))
                   )}
@@ -195,40 +201,52 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
             )}
           </div>
 
-          {/* User Profile & Dropdown */}
-          <div className="relative pl-2 border-l border-zinc-200">
+          {/* User Profile & Logout Dropdown */}
+          <div className="relative pl-2 border-l border-slate-200 flex items-center gap-1.5">
             <button
               onClick={() => {
                 setShowUserMenu(!showUserMenu);
                 setShowNotifs(false);
               }}
-              className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-zinc-100 transition focus:outline-hidden"
+              className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-slate-100 transition active:scale-95 focus:outline-hidden"
+              title="Click for account & logout"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold text-xs uppercase shadow-xs">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white font-bold text-xs uppercase shadow-2xs">
                 {user?.email ? user.email[0] : 'U'}
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-xs font-semibold text-zinc-900 truncate max-w-[120px]">
+                <p className="text-xs font-semibold text-slate-900 truncate max-w-[120px]">
                   {user?.email?.split('@')[0]}
                 </p>
-                <p className="text-[10px] text-zinc-400 capitalize">{user?.role}</p>
+                <p className="text-[10px] text-slate-400 capitalize font-medium">{user?.role}</p>
               </div>
-              <ChevronDown className="h-3.5 w-3.5 text-zinc-400 hidden sm:block" />
+              <ChevronDown className={`h-3.5 w-3.5 text-slate-400 hidden sm:block transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Direct Quick Logout Button on Navbar */}
+            <button
+              onClick={logout}
+              title="Logout"
+              className="hidden sm:flex items-center gap-1 rounded-xl border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition active:scale-95 shadow-2xs"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Logout</span>
             </button>
 
             {/* User Dropdown Menu */}
             {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-zinc-200 bg-white p-2 shadow-xl z-50">
-                <div className="px-3 py-2 border-b border-zinc-100 mb-1">
-                  <p className="text-xs font-semibold text-zinc-900 truncate">{user?.email}</p>
-                  <div className="flex items-center gap-1.5 mt-1">
+              <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                <div className="px-3 py-2.5 bg-slate-50/80 rounded-xl border border-slate-100 mb-2">
+                  <p className="text-xs font-bold text-slate-900 truncate">{user?.email}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
                     <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                        roleBadgeColors[user?.role] || 'bg-zinc-100 text-zinc-700'
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                        roleBadgeColors[user?.role] || 'bg-slate-100 text-slate-700'
                       }`}
                     >
                       {user?.role}
                     </span>
+                    <span className="text-[10px] text-slate-400 font-medium">• Active Session</span>
                   </div>
                 </div>
 
@@ -237,10 +255,10 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
                     setShowUserMenu(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-50 hover:bg-rose-100/80 text-rose-700 px-3 py-2 text-xs font-bold transition active:scale-95 border border-rose-200/60"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
+                  <span>Logout from HCM Lite</span>
                 </button>
               </div>
             )}
@@ -249,7 +267,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
           {/* Mobile hamburger menu button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden rounded-xl border border-zinc-200 p-2 text-zinc-600"
+            className="lg:hidden rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50 transition"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -258,7 +276,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-zinc-200 bg-white px-4 py-3 space-y-1">
+        <div className="lg:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-1 shadow-lg">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -269,22 +287,22 @@ export default function Navbar({ activeTab, setActiveTab, onOpenAI }) {
                   setActiveTab(item.id);
                   setMobileMenuOpen(false);
                 }}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium ${
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ${
                   isActive
-                    ? 'bg-indigo-50 text-indigo-600 font-semibold'
-                    : 'text-zinc-600 hover:bg-zinc-50'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className={`h-4 w-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
                 {item.label}
               </button>
             );
           })}
-          <div className="pt-3 border-t border-zinc-100 flex items-center justify-between">
-            <span className="text-xs text-zinc-500 truncate">{user?.email}</span>
+          <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-500 truncate">{user?.email}</span>
             <button
               onClick={logout}
-              className="flex items-center gap-1 text-xs text-rose-600 font-medium"
+              className="flex items-center gap-1 text-xs text-rose-600 font-bold hover:underline"
             >
               <LogOut className="h-4 w-4" /> Logout
             </button>

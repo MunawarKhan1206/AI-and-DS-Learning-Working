@@ -185,28 +185,34 @@ export default function LeaveManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-          <PlaneTakeoff className="h-6 w-6" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Leave Management & Approvals</h1>
-          <p className="text-xs text-zinc-500">Apply for leaves, check policy quotas, and review team requests</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100">
+            <PlaneTakeoff className="h-6 w-6 shrink-0" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
+              Leave Management & Approvals
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Apply for leaves, check policy quotas, and review team requests
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Leave Balances Cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {balances.map((b, i) => (
-          <div key={i} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-            <span className="text-xs font-semibold text-zinc-500">{b.name}</span>
+          <div key={i} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs hover:shadow-xs transition">
+            <span className="text-xs font-semibold text-slate-500 truncate block">{b.name}</span>
             <div className="mt-2 flex items-baseline justify-between">
-              <span className="text-2xl font-bold text-zinc-900">{b.remaining}</span>
-              <span className="text-[11px] text-zinc-400">
+              <span className="text-2xl font-bold text-slate-900">{b.remaining}</span>
+              <span className="text-[11px] font-medium text-slate-400">
                 {b.quota >= 999 ? 'Days' : `of ${b.quota}`}
               </span>
             </div>
-            <p className="mt-1 text-[10px] text-zinc-400">Used: {b.used} • Pending: {b.pending}</p>
+            <p className="mt-1 text-[10px] text-slate-400 font-medium">Used: {b.used} • Pending: {b.pending}</p>
           </div>
         ))}
       </div>
@@ -214,19 +220,20 @@ export default function LeaveManagement() {
       {/* Main Grid: Application Form & Smart Assistant */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Leave Apply Form */}
-        <div className="lg:col-span-2 rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xs">
-          <div className="flex items-center gap-2 mb-4">
-            <PlaneTakeoff className="h-5 w-5 text-indigo-600" />
-            <h3 className="text-base font-bold text-zinc-900">Apply for Leave</h3>
+        <div className="lg:col-span-2 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-2xs">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+            <PlaneTakeoff className="h-5 w-5 text-indigo-600 shrink-0" />
+            <h3 className="text-base font-bold text-slate-900">Apply for Leave</h3>
           </div>
 
           {/* Smart Leave Prompt Box */}
-          <div className="rounded-2xl bg-indigo-50/60 p-4 border border-indigo-100 mb-5">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-900 mb-1">
-              <Sparkles className="h-4 w-4 text-indigo-600" /> Smart Leave Assistant
+          <div className="rounded-2xl bg-gradient-to-r from-indigo-50/80 to-purple-50/50 p-4 border border-indigo-100 mb-5">
+            <div className="flex items-center gap-2 text-xs font-bold text-indigo-900 mb-1">
+              <Sparkles className="h-4 w-4 text-indigo-600 shrink-0" />
+              <span>Smart Leave Assistant</span>
             </div>
-            <p className="text-[11px] text-indigo-700 mb-2">
-              Type naturally (e.g. <em>"need next Monday and Tuesday off for family wedding"</em>) and the AI will auto-fill the form!
+            <p className="text-[11px] text-indigo-700/90 leading-relaxed mb-3">
+              Type naturally in plain English (e.g. <em>&quot;Need next Monday and Tuesday off for family wedding&quot;</em>) and our AI will pre-fill the form automatically!
             </p>
             <form onSubmit={handleSmartLeave} className="flex gap-2">
               <input

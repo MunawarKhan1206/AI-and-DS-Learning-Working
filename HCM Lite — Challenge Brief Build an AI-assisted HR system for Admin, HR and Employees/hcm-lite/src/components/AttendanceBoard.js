@@ -89,24 +89,28 @@ export default function AttendanceBoard() {
   return (
     <div className="space-y-6">
       {/* Header & Date Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-            <CalendarCheck className="h-6 w-6" />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100">
+            <CalendarCheck className="h-6 w-6 shrink-0" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Daily Attendance Board</h1>
-            <p className="text-xs text-zinc-500">Live check-in status, late arrivals tracking, and employee corrections</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
+              Daily Attendance Board
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              Live check-in status, late arrivals tracking, and employee corrections
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-zinc-400" />
+        <div className="flex items-center gap-2 self-start md:self-auto bg-slate-50 border border-slate-200/80 rounded-2xl px-3 py-1.5 shadow-2xs">
+          <Calendar className="h-4 w-4 text-indigo-600 shrink-0" />
           <input
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-700 shadow-2xs focus:border-indigo-600 focus:outline-hidden"
+            className="bg-transparent text-xs font-bold text-slate-800 focus:outline-hidden"
           />
         </div>
       </div>

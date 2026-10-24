@@ -196,14 +196,16 @@ export default function EmployeeDirectory() {
   return (
     <div className="space-y-6">
       {/* Top Header & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-md shadow-indigo-100">
-            <Users className="h-6 w-6" />
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-2xs">
+        <div className="flex items-center gap-3.5">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white shadow-md shadow-indigo-100">
+            <Users className="h-6 w-6 shrink-0" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Employee Directory & Workforce</h1>
-            <p className="text-xs text-zinc-500">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-950 tracking-tight leading-snug">
+              Employee Directory & Workforce
+            </h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
               Manage personnel records, onboarding, CSV dry-run imports, and employee 360 profiles
             </p>
           </div>
@@ -213,9 +215,10 @@ export default function EmployeeDirectory() {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleExportCSV}
-              className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 shadow-2xs transition"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 shadow-2xs transition"
             >
-              <Download className="h-4 w-4" /> Export CSV
+              <Download className="h-4 w-4 shrink-0" />
+              <span>Export CSV</span>
             </button>
             <button
               onClick={() => {
@@ -223,15 +226,17 @@ export default function EmployeeDirectory() {
                 setImportResult(null);
                 setCsvContent('');
               }}
-              className="flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 shadow-2xs transition"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 active:scale-95 shadow-2xs transition"
             >
-              <Upload className="h-4 w-4" /> Import CSV
+              <Upload className="h-4 w-4 shrink-0" />
+              <span>Import CSV</span>
             </button>
             <button
               onClick={handleOpenAddModal}
-              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-indigo-200 hover:from-indigo-700 hover:to-indigo-800 active:scale-95 transition"
             >
-              <UserPlus className="h-4 w-4" /> Add Employee
+              <UserPlus className="h-4 w-4 shrink-0" />
+              <span>Add Employee</span>
             </button>
           </div>
         )}
